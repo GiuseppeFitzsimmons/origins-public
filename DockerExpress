@@ -1,0 +1,20 @@
+FROM node:14
+
+RUN npm install typescript -g
+COPY back ./back
+COPY tsconfig.json ./
+COPY front ./front
+RUN npm install --prefix front
+RUN npm install --prefix back
+RUN tsc
+#WORKDIR front
+#Optimally, this should be done outside the docker file, but for simplicity I'm building the React app here.
+RUN npm run build --prefix front
+
+
+EXPOSE 3000
+ENV NODE_ENV="container"
+
+WORKDIR back
+
+CMD [ "npm", "run", "docker-start"]

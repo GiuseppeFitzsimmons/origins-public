@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  db:
+    container_name: pg_container
+    restart: always
+    build:
+      context: .
+      dockerfile: DockerPostgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: originsdb
+  web:
+    container_name: express-app
+    build:
+      context: .
+      dockerfile: DockerExpress
+    depends_on:
+      - db
+    environment:
+      NODE_ENV: container
+      PORT: 3000
+    ports:
+      - "3000:3000"
+volumes:
+  pg_data:

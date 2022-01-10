@@ -1,0 +1,33 @@
+{
+  "name": "back",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "cd ..;tsc;cd back;node --experimental-specifier-resolution=node index.js",
+    "docker-start": "sleep 15;node --experimental-specifier-resolution=node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.13",
+    "sequelize": "^6.12.5",
+    "sequelize-cli": "^6.3.0"
+  },
+  "type": "module",
+  "dependencies": {
+    "@types/jsonwebtoken": "^8.5.6",
+    "@types/memory-cache": "^0.2.1",
+    "common-js": "^0.3.8",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "express": "^4.17.2",
+    "jsonwebtoken": "^8.5.1",
+    "memory-cache": "^0.2.0",
+    "pg": "^8.7.1",
+    "uuid": "^8.3.2",
+    "uuidv4": "^6.2.12"
+  }
+}
