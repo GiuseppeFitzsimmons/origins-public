@@ -127,23 +127,29 @@ app.delete('/video/:videoId', (req, res) => __awaiter(void 0, void 0, void 0, fu
 app.post('/tag', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let newTag;
-        if (req.body.id) {
-            yield Tag.update(req.body, {
-                where: {
-                    id: req.body.id
-                }
-            });
-            newTag = yield Tag.findAll({
-                where: {
-                    id: req.body.id
-                }
-            });
+        if (req.body.value) {
+            if (req.body.id) {
+                yield Tag.update(req.body, {
+                    where: {
+                        id: req.body.id
+                    }
+                });
+                newTag = yield Tag.findAll({
+                    where: {
+                        id: req.body.id
+                    }
+                });
+            }
+            else {
+                req.body.id = uuid();
+                newTag = yield Tag.create(req.body);
+            }
+            res.json({ tag: newTag }); // Returns the new tag that is created in the database
         }
         else {
-            req.body.id = uuid();
-            newTag = yield Tag.create(req.body);
+            res.status(400);
+            res.json({ error: 'incomplete request, missing value' });
         }
-        res.json({ tag: newTag }); // Returns the new tag that is created in the database
     }
     catch (error) {
         console.error(error);

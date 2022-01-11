@@ -65,3 +65,5 @@ La mise en cache se fait à deux niveaux - d'abord dans l'application Express av
     * Similairement à Elasticsearch, je ne m'y suis pas plus aventuré par manque de temps.
 * Application client
     * L'application client est extrêmement simple car j'ai voulu porter mon attention sur le backend. Il s'agit donc du strict minimum - même moins, puisqu'il ne fait de logout, et ne peut pas effectuer toutes les opérations de CRUD.
+* Optimisation des queries
+    * Certaines queries sont faites de manière longue et lente, notamment get favourites. C'est par manque de temps que je n'ai pas été plus loin dans l'écriture de queries SQL crues, mais quelques traces de ces efforts existent (bien que mises en commentaire).

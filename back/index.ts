@@ -71,8 +71,8 @@ app.post('/video', async (req: { body: any; }, res: any) => {
 app.get('/video/:videoId', async (req: { params: { videoId: any; }; }, res: any) => {
     const videoId = req.params.videoId;
     try {
-        if (cache.get(videoId)){
-            res.json({video:cache.get(videoId)});
+        if (cache.get(videoId)) {
+            res.json({ video: cache.get(videoId) });
         } else {
             const video = await Video.findOne({
                 where: {
@@ -119,23 +119,28 @@ app.delete('/video/:videoId', async (req: { params: { videoId: any; }; }, res: a
 app.post('/tag', async (req: { body: any; }, res: any) => {
     try {
         let newTag
-        if (req.body.id) {
-            await Tag.update(req.body,
-                {
+        if (req.body.value) {
+            if (req.body.id) {
+                await Tag.update(req.body,
+                    {
+                        where: {
+                            id: req.body.id
+                        }
+                    });
+                newTag = await Tag.findAll({
                     where: {
                         id: req.body.id
                     }
-                });
-            newTag = await Tag.findAll({
-                where: {
-                    id: req.body.id
-                }
-            })
+                })
+            } else {
+                req.body.id = uuid();
+                newTag = await Tag.create(req.body);
+            }
+            res.json({ tag: newTag }); // Returns the new tag that is created in the database
         } else {
-            req.body.id = uuid();
-            newTag = await Tag.create(req.body);
+        res.status(400);
+        res.json({ error: 'incomplete request, missing value' });
         }
-        res.json({ tag: newTag }); // Returns the new tag that is created in the database
     } catch (error) {
         console.error(error);
         res.status(400);
@@ -225,7 +230,7 @@ app.get('/videotag/:tagId', async (req: any, res: any) => {
     const tagId = req.params.tagId;
     try {
         let videos: any[] = []
-        let tag 
+        let tag
         try {
             tag = await Tag.findAll({
                 where: {

@@ -8,60 +8,89 @@ const request = require('superagent')
 
 chai.use(chaiHttp);
 
-const serverUrl="http://localhost:3000";
+const serverUrl = "http://localhost:3000";
 
 let accessToken, testVideo;
 
 describe('Users', () => {
     before(async () => {
         console.log("Insert a user for testing");
-        let response = await request.post(`${serverUrl}/user`).send({id:'bob@test.com',password:'password'});
-        accessToken=response.body.access_token;
-        response = await request.post(`${serverUrl}/video`).send({name:'chaivideo',description:'chaidescription',url:'chiurl'});
-        testVideo=response.body.video;
+        let response = await request.post(`${serverUrl}/user`).send({ id: 'bob@test.com', password: 'password' });
+        accessToken = response.body.access_token;
+        response = await request.post(`${serverUrl}/video`).send({ name: 'chaivideo', description: 'chaidescription', url: 'chiurl' });
+        testVideo = response.body.video;
         console.log("Test user successfully inserted", accessToken);
         return true;
     });
     describe('/POST user', () => {
         it('it should FAIL to create a user', async () => {
             let response = await request.post(`${serverUrl}/user`)
-                .ok(res => res.status < 500)
-                .send({id:'bob@test.com',password:'differentpassword'});
-            chai.assert(response.status===401, `The user was updated`);
+                .send({ id: 'bob@test.com' })
+                .ok(res => res.status < 500);
+            chai.assert(response.status === 400, `The user was not updated`);
             return true;
         });
     });
     describe('/POST login', () => {
         it('it should AUTHENTICATE a user', async () => {
-            let explodedToken=accessToken.split('.')[1];
+            let explodedToken = accessToken.split('.')[1];
             let buff = new Buffer(explodedToken, 'base64');
             explodedToken = JSON.parse(buff.toString('ascii'));
-            let expiry=explodedToken.exp;
-            let response = await request.post(`${serverUrl}/login`).send({id:'bob@test.com',password:'password'});
-            accessToken=response.body.access_token;
-            explodedToken=accessToken.split('.')[1];
+            let expiry = explodedToken.exp;
+            let response = await request.post(`${serverUrl}/login`).send({ id: 'bob@test.com', password: 'password' });
+            accessToken = response.body.access_token;
+            explodedToken = accessToken.split('.')[1];
             buff = new Buffer(explodedToken, 'base64');
             explodedToken = JSON.parse(buff.toString('ascii'));
-            chai.assert(expiry!=explodedToken.exp, `The token was not renewed`);
+            chai.assert(expiry != explodedToken.exp, `The token was not renewed`);
+            return true;
+        });
+    });
+    describe('/POST login', () => {
+        it('it should FAIL to AUTHENTICATE a user', async () => {
+            let explodedToken = accessToken.split('.')[1];
+            let buff = new Buffer(explodedToken, 'base64');
+            explodedToken = JSON.parse(buff.toString('ascii'));
+            let expiry = explodedToken.exp;
+            let response = await request.post(`${serverUrl}/login`).send({ id: 'bob@test.com', password: 'badpassword' })
+                .ok(res => res.status < 500);
+            chai.assert(response.status === 401, `The user was not authenticated`);
             return true;
         });
     });
     describe('/POST favourite', () => {
         it('it should CREATE a favourite', async () => {
-            let response = await request.post(`${serverUrl}/favourite`).set({'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken}).send({userId:'bob@test.com',videoId:testVideo.id});
+            let response = await request.post(`${serverUrl}/favourite`).set({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken }).send({ userId: 'bob@test.com', videoId: testVideo.id });
             console.log("favourites ", response.body);
+            return true;
+        });
+    });
+    describe('/POST favourite', () => {
+        it('it should FAIL to CREATE a favourite', async () => {
+            let response = await request.post(`${serverUrl}/favourite`).set({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken }).send({ userId: 'bob@test.com', videoId: 'invalidId' })
+                .ok(res => res.status < 500);
+            chai.assert(response.status === 400, `The favourite was not created`);
             return true;
         });
     });
     describe('/GET favourite', () => {
         it('it should GET the favourites for a user', async () => {
-            let response = await request.get(`${serverUrl}/favourite`).set({'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken});
+            let response = await request.get(`${serverUrl}/favourite`).set({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken });
             console.log("favourites nn ", JSON.stringify(response.body));
             return true;
         });
     });
+    describe('/GET favourite', () => {
+        it('it should FAIL to GET the favourites for a user', async () => {
+            let response = await request.get(`${serverUrl}/favourite`).set({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + 'invalidToken' })
+                .ok(res => res.status < 500);
+            console.log("favourites nn ", JSON.stringify(response.body));
+            chai.assert(response.status === 401, `The favourite was not retrieved`);
+            return true;
+        });
+    });
     after(async () => {
-        await request.delete(`${serverUrl}/user`).set({'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken});
+        await request.delete(`${serverUrl}/user`).set({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken });
         await request.delete(`${serverUrl}/video/${testVideo.id}`);
         return true;
     })
